@@ -7,8 +7,13 @@ import {
   Typography,
   Stack,
   Paper,
+  IconButton,
 } from "@mui/material"; // Importing components from MUI (Material UI)
 import { io } from "socket.io-client"; // Importing the socket.io-client library for real-time communication
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import EmojiPicker from 'emoji-picker-react';
+
+
 
 // Connect to the Socket.IO server
 const socket = io("http://localhost:3000"); // Establishing the connection to the server
@@ -18,6 +23,7 @@ const ChatBox = () => {
   const [input, setInput] = useState(""); // State to manage the current input text
   const [userId, setUserId] = useState(null); // State to store the current user ID
   const [typingUsers, setTypingUsers] = useState({}); // State to track users who are typing
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false); // State to manage the visibility of the emoji picker
 
   useEffect(() => {
     // Assign unique user ID when the component is first mounted
@@ -66,10 +72,18 @@ const ChatBox = () => {
 
   const sendMessage = () => {
     if (input.trim()) { // If the input is not just spaces
-      const message = { userId, text: input }; // Create a message object
+      const message = { userId, 
+        text: input,  
+        timestamp: new Date().toISOString(),
+      }; // Create a message object
       socket.emit("sendMessage", message); // Emit the message to the server
       setInput(""); // Clear the input field after sending the message
     }
+  };
+
+  const handleEmojiClick = (emojiObject) => {
+    setInput((prev) => prev + emojiObject.emoji); // Add the clicked emoji to the input
+    setShowEmojiPicker(false); // Hide the emoji picker after selecting an emoji
   };
 
   return (
@@ -105,6 +119,13 @@ const ChatBox = () => {
                 }}
               >
                 <Typography>{msg.text}</Typography> {/* Display the message text */}
+                 {/*  Timestamp goes right below the message text */}
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Typography>
               </Box>
               {msg.userId !== userId && <Avatar>O</Avatar>} {/* Show "O" avatar for other users */}
             </Stack>
@@ -178,13 +199,26 @@ const ChatBox = () => {
       </Paper>
 
       {/* Input + Send */}
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} alignContent={"center"} position={"relative"}>
+        {/* Toggle Emoji Picker */}
+      <IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+        <EmojiEmotionsIcon />
+      </IconButton>
+
+      {showEmojiPicker && (
+        <div style={{ position: 'absolute', zIndex: 1000 }}>
+          <EmojiPicker onEmojiClick={handleEmojiClick} />
+        </div>
+      )}
+     
         <TextField
           value={input}
           onChange={handleInputChange} // Call handleInputChange when the input changes
           placeholder="Type a message" // Placeholder for the input field
           fullWidth
         />
+       
+
         <Button
           variant="contained"
           color="primary"
@@ -193,7 +227,9 @@ const ChatBox = () => {
         >
           Send
         </Button>
+        
       </Stack>
+     
     </Stack>
   );
 };
