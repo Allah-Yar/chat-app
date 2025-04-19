@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Importing necessary hooks from React
+import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -8,118 +8,170 @@ import {
   Stack,
   Paper,
   IconButton,
-} from "@mui/material"; // Importing components from MUI (Material UI)
-import { io } from "socket.io-client"; // Importing the socket.io-client library for real-time communication
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Tabs,
+  Tab,
+} from "@mui/material";
+import { io } from "socket.io-client";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker from "emoji-picker-react";
 
-
-
-// Connect to the Socket.IO server
-const socket = io("http://localhost:3000"); // Establishing the connection to the server
+const socket = io("http://localhost:3000");
 
 const ChatBox = () => {
-  const [messages, setMessages] = useState([]); // State to store messages
-  const [input, setInput] = useState(""); // State to manage the current input text
-  const [userId, setUserId] = useState(null); // State to store the current user ID
-  const [typingUsers, setTypingUsers] = useState({}); // State to track users who are typing
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false); // State to manage the visibility of the emoji picker
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [userId, setUserId] = useState(null);
+  const [typingUsers, setTypingUsers] = useState({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [room, setRoom] = useState("general");
+  const [chatMode, setChatMode] = useState("room"); // 'room' or 'private'
+  const [recipientId, setRecipientId] = useState(""); // For private chat
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   useEffect(() => {
-    // Assign unique user ID when the component is first mounted
-    let storedUserId = sessionStorage.getItem("userId"); // Check if the user ID exists in sessionStorage
+    let storedUserId = sessionStorage.getItem("userId");
     if (!storedUserId) {
-      storedUserId = Math.random().toString(36).substring(7); // If no ID, generate a random one
-      sessionStorage.setItem("userId", storedUserId); // Save it in sessionStorage
+      storedUserId = Math.random().toString(36).substring(2, 10);
+      sessionStorage.setItem("userId", storedUserId);
     }
-    setUserId(storedUserId); // Set the user ID to state
+    setUserId(storedUserId);
 
-    // Listen for incoming messages
-    socket.on("receiveMessage", (message) => {
-      setMessages((prev) => [...prev, message]); // Add the new message to the message state
+    socket.emit("register", storedUserId);
+
+    socket.emit("joinRoom", room);
+
+    socket.on("roomMessage", (message) => {
+      setMessages((prev) => [...prev, message]);
     });
 
-    // Listen for typing status updates from other users
-    socket.on("userTyping", ({ userId: typingUserId }) => {
-      // Only update if the typing user is not the current user
-      if (typingUserId !== storedUserId) {
-        setTypingUsers((prev) => ({
-          ...prev,
-          [typingUserId]: true, // Set the typing status for the user
-        }));
+    socket.on("privateMessage", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
 
-        // Remove typing status after 1.5 seconds
+    socket.on("userTyping", ({ userId: typingUserId }) => {
+      if (typingUserId !== storedUserId) {
+        setTypingUsers((prev) => ({ ...prev, [typingUserId]: true }));
         setTimeout(() => {
-          setTypingUsers((prev) => ({
-            ...prev,
-            [typingUserId]: false,
-          }));
+          setTypingUsers((prev) => ({ ...prev, [typingUserId]: false }));
         }, 1500);
       }
     });
 
-    // Cleanup the event listeners when the component unmounts
+    socket.on("onlineUsers", (users) => {
+      setOnlineUsers(users.filter((id) => id !== storedUserId));
+    });
+
     return () => {
-      socket.off("receiveMessage");
+      socket.off("roomMessage");
+      socket.off("privateMessage");
       socket.off("userTyping");
+      socket.off("onlineUsers");
     };
-  }, []); // Empty dependency array, ensures this effect runs only once on mount
+  }, [room]);
 
   const handleInputChange = (e) => {
-    setInput(e.target.value); // Update the input state as the user types
-    socket.emit("typing", { userId }); // Emit a "typing" event with the current user ID
+    setInput(e.target.value);
+    socket.emit("typing", { userId, room, recipientId, chatMode });
   };
 
   const sendMessage = () => {
-    if (input.trim()) { // If the input is not just spaces
-      const message = { userId, 
-        text: input,  
-        timestamp: new Date().toISOString(),
-      }; // Create a message object
-      socket.emit("sendMessage", message); // Emit the message to the server
-      setInput(""); // Clear the input field after sending the message
+    if (!input.trim()) return;
+
+    const message = {
+      userId,
+      text: input,
+      timestamp: new Date().toISOString(),
+      recipientId: chatMode === "private" ? recipientId : null,
+    };
+
+    if (chatMode === "room") {
+      socket.emit("sendMessage", { message, room });
+    } else {
+      socket.emit("sendPrivateMessage", message);
     }
+
+    setMessages((prev) => [...prev, message]);
+    setInput("");
   };
 
   const handleEmojiClick = (emojiObject) => {
-    setInput((prev) => prev + emojiObject.emoji); // Add the clicked emoji to the input
-    setShowEmojiPicker(false); // Hide the emoji picker after selecting an emoji
+    setInput((prev) => prev + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const handleRoomChange = (e) => {
+    const newRoom = e.target.value;
+    socket.emit("leaveRoom", room);
+    setRoom(newRoom);
+    setMessages([]);
+    socket.emit("joinRoom", newRoom);
+  };
+
+  const handleChatModeChange = (event, newValue) => {
+    setChatMode(newValue);
+    setMessages([]);
   };
 
   return (
     <Stack spacing={2}>
-      {/* Chat display */}
+      <Tabs value={chatMode} onChange={handleChatModeChange} centered>
+        <Tab label="Room Chat" value="room" />
+        <Tab label="Private Chat" value="private" />
+      </Tabs>
+
+      {chatMode === "room" ? (
+        <FormControl fullWidth>
+          <InputLabel>Chat Room</InputLabel>
+          <Select value={room} onChange={handleRoomChange} label="Chat Room">
+            <MenuItem value="general">General</MenuItem>
+            <MenuItem value="dev">Developers</MenuItem>
+            <MenuItem value="fun">Fun</MenuItem>
+          </Select>
+        </FormControl>
+      ) : (
+        <FormControl fullWidth>
+          <InputLabel>Select User</InputLabel>
+          <Select
+            value={recipientId}
+            onChange={(e) => setRecipientId(e.target.value)}
+            label="Select User"
+          >
+            {onlineUsers.map((id) => (
+              <MenuItem key={id} value={id}>
+                {id}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
       <Paper
         elevation={3}
-        sx={{
-          height: "400px",
-          padding: 2,
-          overflowY: "auto",
-          borderRadius: 2,
-        }}
+        sx={{ height: "400px", padding: 2, overflowY: "auto", borderRadius: 2 }}
       >
-        {/* Loop through the messages and display them */}
         {messages.map((msg, index) => (
           <Box key={index} mb={2}>
-            {/* Message bubble */}
             <Stack
               direction="row"
               spacing={1}
-              justifyContent={msg.userId === userId ? "flex-start" : "flex-end"} // Align message to the left if it's from current user, otherwise right
+              justifyContent={msg.userId === userId ? "flex-start" : "flex-end"}
               alignItems="center"
             >
-              {msg.userId === userId && <Avatar>Me</Avatar>} {/* Show "Me" avatar for the current user */}
+              {msg.userId === userId && <Avatar>Me</Avatar>}
               <Box
                 sx={{
                   backgroundColor:
-                    msg.userId === userId ? "primary.light" : "success.light", // Different background color for the user and others
+                    msg.userId === userId ? "primary.light" : "success.light",
                   padding: 1.5,
                   borderRadius: 2,
                   maxWidth: "70%",
                 }}
               >
-                <Typography>{msg.text}</Typography> {/* Display the message text */}
-                 {/*  Timestamp goes right below the message text */}
+                <Typography>{msg.text}</Typography>
                 <Typography variant="caption" color="text.secondary">
                   {new Date(msg.timestamp).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -127,15 +179,14 @@ const ChatBox = () => {
                   })}
                 </Typography>
               </Box>
-              {msg.userId !== userId && <Avatar>O</Avatar>} {/* Show "O" avatar for other users */}
+              {msg.userId !== userId && <Avatar>O</Avatar>}
             </Stack>
           </Box>
         ))}
 
-        {/* Typing indicator - Show with Me's avatar or O's avatar */}
         {Object.keys(typingUsers).map(
           (typingUserId) =>
-            typingUsers[typingUserId] && typingUserId !== userId && (
+            typingUsers[typingUserId] && (
               <Stack
                 key={typingUserId}
                 direction="row"
@@ -145,93 +196,37 @@ const ChatBox = () => {
                   display: "flex",
                   marginTop: "8px",
                   justifyContent:
-                    typingUserId === userId ? "flex-start" : "flex-end", // Adjust to show with the respective avatar
+                    typingUserId === userId ? "flex-start" : "flex-end",
                 }}
               >
-                {/* Typing indicator next to the correct avatar */}
-                {typingUserId === userId ? (
-                  <Avatar sx={{ width: 24, height: 24 }}>Me</Avatar> // Show "Me" avatar if the current user is typing
-                ) : (
-                  <Avatar sx={{ width: 24, height: 24 }}>O</Avatar> // Show "O" avatar if another user is typing
-                )}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                >
-                  {/* Typing dots animation */}
-                  <Box
-                    sx={{
-                      width: "6px",
-                      height: "6px",
-                      backgroundColor: "gray",
-                      borderRadius: "50%",
-                      animation: "bounce 1s infinite",
-                      animationDelay: "0s",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      width: "6px",
-                      height: "6px",
-                      backgroundColor: "gray",
-                      borderRadius: "50%",
-                      animation: "bounce 1s infinite",
-                      animationDelay: "0.2s",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      width: "6px",
-                      height: "6px",
-                      backgroundColor: "gray",
-                      borderRadius: "50%",
-                      animation: "bounce 1s infinite",
-                      animationDelay: "0.4s",
-                    }}
-                  />
-                </Box>
+                <Avatar sx={{ width: 24, height: 24 }}>...</Avatar>
+                <Typography variant="body2">Typing...</Typography>
               </Stack>
             )
         )}
       </Paper>
 
-      {/* Input + Send */}
-      <Stack direction="row" spacing={1} alignContent={"center"} position={"relative"}>
-        {/* Toggle Emoji Picker */}
-      <IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-        <EmojiEmotionsIcon />
-      </IconButton>
-
-      {showEmojiPicker && (
-        <div style={{ position: 'absolute', zIndex: 1000 }}>
-          <EmojiPicker onEmojiClick={handleEmojiClick} />
-        </div>
-      )}
-     
+      <Stack direction="row" spacing={1} alignContent="center" position="relative">
+        <IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+          <EmojiEmotionsIcon />
+        </IconButton>
+        {showEmojiPicker && (
+          <div style={{ position: "absolute", zIndex: 1000 }}>
+            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          </div>
+        )}
         <TextField
           value={input}
-          onChange={handleInputChange} // Call handleInputChange when the input changes
-          placeholder="Type a message" // Placeholder for the input field
+          onChange={handleInputChange}
+          placeholder="Type a message"
           fullWidth
         />
-       
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={sendMessage} // Send message when the button is clicked
-          sx={{ minWidth: "100px" }}
-        >
+        <Button variant="contained" color="primary" onClick={sendMessage}>
           Send
         </Button>
-        
       </Stack>
-     
     </Stack>
   );
 };
 
-export default ChatBox; // Export the component
+export default ChatBox;
