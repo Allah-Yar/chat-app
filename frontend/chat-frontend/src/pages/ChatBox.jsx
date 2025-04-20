@@ -19,6 +19,7 @@ import { io } from "socket.io-client";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import EmojiPicker from "emoji-picker-react";
 import LogoutDialog from "../components/LogoutDialog";
+import axios from "axios";
 
 const socket = io("http://localhost:3000");
 
@@ -80,6 +81,30 @@ const ChatBox = () => {
     socket.emit("typing", { userId, room, recipientId, chatMode });
   };
 
+   // 👇 This will fetch the chat history on chat change
+   useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        let response;
+        if (chatMode === "room") {
+          response = await axios.get("http://localhost:3000/api/chat/history", {
+            params: { room }
+          });
+        } else {
+          response = await axios.get("http://localhost:3000/api/chat/history", {
+            params: { userId, recipientId }
+          });
+        }
+
+        setMessages(response.data);
+      } catch (error) {
+        console.error("Failed to load chat history", error);
+      }
+    };
+
+    fetchChatHistory();
+  }, [room, recipientId, chatMode]);
+
   const sendMessage = () => {
     if (!input.trim()) return;
 
@@ -99,6 +124,88 @@ const ChatBox = () => {
     setMessages((prev) => [...prev, message]);
     setInput("");
   };
+
+  // const sendMessage = async () => {
+  //   if (!input.trim()) return;
+  
+  //   const message = {
+  //     userId,
+  //     text: input,
+  //     timestamp: new Date().toISOString(),
+  //     recipientId: chatMode === "private" ? recipientId : null,
+  //   };
+  
+  //   if (chatMode === "room") {
+  //     socket.emit("sendMessage", { message, room });
+  
+  //     // Save to DB
+  //     await axios("http://localhost:3000/api/chat/send", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         sender: userId,
+  //         room,
+  //         text: input
+  //       })
+  //     });
+  //   } else {
+  //     socket.emit("sendPrivateMessage", message);
+  
+  //     // Save to DB
+  //     await axios("http://localhost:3000/api/chat/send", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         sender: userId,
+  //         receiver: recipientId,
+  //         text: input
+  //       })
+  //     });
+  //   }
+  
+  //   setMessages((prev) => [...prev, message]);
+  //   setInput("");
+  // };
+
+  // const sendMessage = async () => {
+  //   if (!input.trim()) return;
+  
+  //   const message = {
+  //     userId,
+  //     text: input,
+  //     timestamp: new Date().toISOString(),
+  //     recipientId: chatMode === "private" ? recipientId : null,
+  //   };
+  
+  //   try {
+  //     if (chatMode === "room") {
+  //       socket.emit("sendMessage", { message, room });
+  
+  //       // Save to DB
+  //       await axios.post("http://localhost:3000/api/chat/send", {
+  //         sender: userId,
+  //         room,
+  //         text: input
+  //       });
+  //     } else {
+  //       socket.emit("sendPrivateMessage", message);
+  
+  //       // Save to DB
+  //       await axios.post("http://localhost:3000/api/chat/send", {
+  //         sender: userId,
+  //         receiver: recipientId,
+  //         text: input
+  //       });
+  //     }
+  
+  //     setMessages((prev) => [...prev, message]);
+  //     setInput("");
+  //   } catch (error) {
+  //     console.error("Error sending message:", error);
+  //   }
+  // };
+  
+  
 
   const handleEmojiClick = (emojiObject) => {
     setInput((prev) => prev + emojiObject.emoji);
