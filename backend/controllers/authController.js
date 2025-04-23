@@ -1,8 +1,11 @@
 import User from "../models/User.js";
+import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = "your_jwt_secret"; // ideally use .env
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET
 
 export const register = async (req, res) => {
   const { username, email, password } = req.body;
