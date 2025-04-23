@@ -20,6 +20,7 @@ const ChatSchema = new mongoose.Schema(
     receiver: { type: String, required: false }, // Optional for room chats
     room: { type: String, required: false },     // Optional for direct messages
     text: { type: String, required: true },      // Ensure text is required
+    fileUrl: { type: String, default: null }
   },
   { timestamps: true }
 );
