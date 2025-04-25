@@ -47,6 +47,7 @@ import Signup from "./pages/Signup";
 import ChatBox from "./pages/ChatBox";
 import PrivateRoute from "./routes/PrivateRoute";
 import { isLoggedIn } from "./utils/auth";
+import ChatPage from "./components/ChatPage";
 
 const App = () => (
   <Router>
@@ -57,6 +58,12 @@ const App = () => (
       <Route path="/chat" element={
         <PrivateRoute>
           <ChatBox />
+
+        </PrivateRoute>
+      } />
+      <Route path="/chatpage" element={
+        <PrivateRoute>
+          <ChatPage />
         </PrivateRoute>
       } />
     </Routes>
