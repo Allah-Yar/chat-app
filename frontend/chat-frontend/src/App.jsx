@@ -1,55 +1,27 @@
-// import React from "react";
-// import { ThemeProvider, createTheme } from "@mui/material/styles";
-// import { Container, Typography, Box } from "@mui/material";
-// import ChatBox from "./pages/ChatBox";
-
-// const theme = createTheme();
-
-// function App() {
-//   return (
-//     <ThemeProvider theme={theme}>
-//       <Container maxWidth="sm">
-//         <Box sx={{ p: 5 }}>
-//           <Typography variant="h4" component="h1" gutterBottom>
-//             Real-Time Chat
-//           </Typography>
-//           <ChatBox />
-//         </Box>
-//       </Container>
-//     </ThemeProvider>
-//   );
-// }
-
-// export default App;
-
-// import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-// import Login from "./pages/Login";
-// import Signup from "./pages/Signup";
-// import ChatBox from "./pages/ChatBox";
-// import { isLoggedIn } from "./utils/auth";
-// import PrivateRoute from "./routes/PrivateRoute";
-
-// const App = () => (
-//   <Router>
-//     <Routes>
-//       <Route path="/" element={isLoggedIn() ? <Navigate to="/chat" /> : <Login />} />
-//       <Route path="/signup" element={<Signup />} />
-//       <Route path="/chat" element={isLoggedIn() ? <PrivateRoute><ChatBox /></PrivateRoute> : <Navigate to="/" />} />
-//     </Routes>
-//   </Router>
-// );
-
-// export default App;
-
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import ChatBox from "./pages/ChatBox";
+// import ChatBox from "./components/ChatBox/ChatBox";
+import Navbar from "./components/Navbar";
+import UsersBar from './components/UsersBar';
 import PrivateRoute from "./routes/PrivateRoute";
 import { isLoggedIn } from "./utils/auth";
-import ChatPage from "./components/ChatPage";
+// import ChatPage from "./components/ChatPage";
+
+const theme = createTheme({
+  palette: {
+    background: {
+      default: '#6a1b9a' // this will apply everywhere
+    }
+  }
+});
 
 const App = () => (
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    
   <Router>
     <Routes>
       <Route path="/" element={isLoggedIn() ? <Navigate to="/chat" /> : <Login />} />
@@ -57,17 +29,20 @@ const App = () => (
       <Route path="/signup" element={<Signup />} />
       <Route path="/chat" element={
         <PrivateRoute>
-          <ChatBox />
-
+          {/* <ChatBox /> */}
+          <Navbar />
+          <UsersBar />
+          
         </PrivateRoute>
       } />
-      <Route path="/chatpage" element={
+      {/* <Route path="/chatpage" element={
         <PrivateRoute>
           <ChatPage />
         </PrivateRoute>
-      } />
+      } /> */}
     </Routes>
   </Router>
+  </ThemeProvider>
 );
 
 export default App;
