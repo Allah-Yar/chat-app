@@ -1425,3 +1425,137 @@
 // // };
 
 // // export default ChatBox;
+
+
+
+  // // useEffect(() => {
+  //   // Get or create user ID from session storage
+  //   let storedUserId = sessionStorage.getItem("userId");
+  //   const storedUsername = sessionStorage.getItem("username");
+    
+  //   if (!storedUserId) {
+  //     storedUserId = Math.random().toString(36).substring(2, 10);
+  //     sessionStorage.setItem("userId", storedUserId);
+  //   }
+    
+  //   setUserId(storedUserId);
+
+  //   if (storedUsername) {
+  //     setUsername(storedUsername);
+  //   }
+
+  //   // Register with the socket server
+  //   socket.emit("register", { 
+  //     userId: storedUserId, 
+  //     username: storedUsername || "Anonymous" 
+  //   });
+
+  //   // Socket event listeners for direct messaging
+  //   const handlePrivateMessage = (message) => {
+  //     setMessages((prev) => {
+  //       // Check if the message is related to the current active conversation
+  //       if (
+  //         // If we're viewing a chat with the sender
+  //         (activeUser === message.senderId) || 
+  //         // Or if this is our message to the receiver
+  //         (activeUser === message.receiverId && message.senderId === storedUserId)
+  //       ) {
+  //         return [...prev, {
+  //           ...message,
+  //           id: Date.now() + Math.random(), // Ensure unique ID
+  //           time: message.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  //         }];
+  //       }
+  //       return prev;
+  //     });
+      
+  //     // Update unread count and last message for the sender if it's not the active conversation
+  //     if (message.senderId !== storedUserId && message.senderId !== activeUser) {
+  //       setOnlineUsers(prev => 
+  //         prev.map(user => {
+  //           if (user.userId === message.senderId) {
+  //             return {
+  //               ...user,
+  //               unread: (user.unread || 0) + 1,
+  //               lastMessage: message.text,
+  //               lastMessageTime: message.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  //             };
+  //           }
+  //           return user;
+  //         })
+  //       );
+  //     }
+  //   };
+
+  //   const handleUserTyping = ({ userId: typingUserId, username: typingUsername }) => {
+  //     if (typingUserId !== storedUserId) {
+  //       setTypingUsers((prev) => ({
+  //         ...prev,
+  //         [typingUserId]: { typing: true, username: typingUsername }
+  //       }));
+        
+  //       // Clear typing indicator after delay
+  //       setTimeout(() => {
+  //         setTypingUsers((prev) => {
+  //           // Only update if the user hasn't started typing again
+  //           const updatedUsers = { ...prev };
+  //           if (updatedUsers[typingUserId]) {
+  //             updatedUsers[typingUserId] = { 
+  //               ...updatedUsers[typingUserId],
+  //               typing: false 
+  //             };
+  //           }
+  //           return updatedUsers;
+  //         });
+  //       }, 3000);
+  //     }
+  //   };
+
+  //   const handleOnlineUsers = (users) => {
+  //     // Filter out the current user
+  //     const otherUsers = users.filter((user) => user.userId !== storedUserId);
+      
+  //     // Preserve unread counts and last messages when updating online users
+  //     setOnlineUsers(prev => {
+  //       return otherUsers.map(newUser => {
+  //         const existingUser = prev.find(u => u.userId === newUser.userId);
+  //         return {
+  //           ...newUser,
+  //           status: newUser.status || "online",
+  //           userId: newUser.userId || "Anonymous",
+  //           unread: existingUser?.unread || 0,
+  //           lastMessage: existingUser?.lastMessage || "",
+  //           lastMessageTime: existingUser?.lastMessageTime || ""
+  //         };
+  //       });
+  //     });
+      
+  //     // Set first online user as active if none is selected
+  //     if (!activeUser && otherUsers.length > 0) {
+  //       setActiveUser(otherUsers[0].userId);
+  //       // loadDirectMessages(otherUsers[0].userId);
+  //     }
+  //   };
+
+  //   const handleError = (errorMsg) => {
+  //     setError(errorMsg);
+  //     setTimeout(() => setError(null), 5000);
+  //   };
+    
+
+  //   // Socket event listeners
+  //   socket.on("privateMessage", handlePrivateMessage);
+  //   socket.on("userTyping", handleUserTyping);
+  //   socket.on("onlineUsers", handleOnlineUsers);
+  //   socket.on("error", handleError);
+
+  //   // Clean up socket listeners
+  //   return () => {
+  //     socket.off("privateMessage", handlePrivateMessage);
+  //     socket.off("userTyping", handleUserTyping);
+  //     socket.off("onlineUsers", handleOnlineUsers);
+  //     socket.off("error", handleError);
+  //     setMessages([]);
+  //   };
+    
+  // }, [activeUser, userId]);
