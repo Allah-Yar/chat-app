@@ -1,273 +1,1967 @@
-// import React, { useState } from 'react';
-// import { 
-//   Paper, 
-//   List, 
-//   ListItem, 
-//   ListItemAvatar, 
-//   ListItemText, 
-//   Avatar, 
-//   Typography, 
+// // Description: This file contains the ChatNavbar component which is a responsive navigation bar for a chat application. It includes features like dark mode toggle, notifications, and user profile menu. The navbar adapts to different screen sizes and provides a consistent user experience across devices.
+// import React, { useState, useContext } from 'react';
+// import {
 //   Box,
+//   Typography,
 //   IconButton,
-//   InputBase
+//   Badge,
+//   Menu,
+//   MenuItem,
+//   Tooltip,
+//   Switch,
+//   Divider,
+//   useMediaQuery,
+//   useTheme,
+//   ThemeProvider,
+//   createTheme,
+//   alpha
 // } from '@mui/material';
-// import { Search, MoreVertical } from 'lucide-react';
 
-// export default function MessengerUserBar() {
-//   const [users] = useState([
-//     { id: 1, name: "Emma Wilson", avatar: "/api/placeholder/100/100", status: "online", lastSeen: "Active now" },
-//     { id: 2, name: "James Johnson", avatar: "/api/placeholder/100/100", status: "online", lastSeen: "Active now" },
-//     { id: 3, name: "Olivia Martinez", avatar: "/api/placeholder/100/100", status: "offline", lastSeen: "Last seen 20m ago" },
-//     { id: 4, name: "Noah Thompson", avatar: "/api/placeholder/100/100", status: "offline", lastSeen: "Last seen 1h ago" },
-//     { id: 5, name: "Sophia Davis", avatar: "/api/placeholder/100/100", status: "online", lastSeen: "Active now" },
-//     { id: 6, name: "Liam Miller", avatar: "/api/placeholder/100/100", status: "offline", lastSeen: "Last seen 2h ago" }
-//   ]);
+// import {
+//   Home,
+//   Users,
+//   Settings,
+//   HelpCircle,
+//   FileText,
+//   Search,
+//   Bell,
+//   Moon,
+//   Sun,
+//   ChevronDown,
+//   User,
+//   LogOut,
+//   Menu as MenuIcon
+// } from 'lucide-react';
 
-//   const [searchQuery, setSearchQuery] = useState('');
+// // Create a Theme Context for color mode
+// export const ColorModeContext = React.createContext({
+//   toggleColorMode: () => {},
+//   mode: 'light'
+// });
 
-//   const filteredAndSortedUsers = users
-//     .filter(user =>
-//       user.name.toLowerCase().includes(searchQuery.toLowerCase())
-//     )
-//     .sort((a, b) => {
-//       if (a.status === b.status) return 0;
-//       return a.status === "online" ? -1 : 1;
-//     });
+// export default function ChatNavbar({ activeTab = 'chat', onTabChange }) {
+//   const theme = useTheme();
+//   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+//   const [anchorEl, setAnchorEl] = useState(null);
+//   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+//   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  
+//   // Access the color mode context
+//   const colorMode = useContext(ColorModeContext);
+//   const isDarkMode = colorMode.mode === 'dark';
+
+//   // Handle profile menu
+//   const handleProfileMenuOpen = (event) => {
+//     setAnchorEl(event.currentTarget);
+//   };
+
+//   const handleProfileMenuClose = () => {
+//     setAnchorEl(null);
+//   };
+
+//   // Handle mobile menu
+//   const handleMobileMenuOpen = (event) => {
+//     setMobileMenuAnchor(event.currentTarget);
+//   };
+
+//   const handleMobileMenuClose = () => {
+//     setMobileMenuAnchor(null);
+//   };
+
+//   // Handle notifications
+//   const handleNotificationsOpen = (event) => {
+//     setNotificationsAnchor(event.currentTarget);
+//   };
+
+//   const handleNotificationsClose = () => {
+//     setNotificationsAnchor(null);
+//   };
+
+//   // Handle tab change
+//   const handleNavItemClick = (tab) => {
+//     if (onTabChange) {
+//       onTabChange(tab);
+//     }
+//     handleMobileMenuClose();
+//   };
+
+//   // Create gradient based on color mode
+//   const navbarBackground = isDarkMode
+//     ? 'linear-gradient(to right, #4a148c, #6a1b9a)'
+//     : 'linear-gradient(to right, #8e24aa, #6a1b9a)';
+
+//   // Get icon color based on active state
+//   const getIconColor = (tabName) => {
+//     if (activeTab === tabName) {
+//       return theme.palette.secondary.light;
+//     }
+//     return 'white';
+//   };
+
+//   // Get active indicator style
+//   const getActiveStyle = (tabName) => {
+//     if (activeTab === tabName) {
+//       return {
+//         borderBottom: `3px solid ${theme.palette.secondary.light}`,
+//         borderRadius: 0,
+//         paddingBottom: '4px'
+//       };
+//     }
+//     return {};
+//   };
 
 //   return (
-//     <Paper 
-//       elevation={0}
-//       sx={{
-//         width: '100%',
-//         height: 80,
-//         bgcolor: 'rgba(10, 25, 47, 0.8)', // bluish black base
-//         backdropFilter: 'blur(10px)',
-//         borderBottom: '1px solid #1a2634',
-//         display: 'flex',
-//         alignItems: 'center',
-//         px: 2,
-//         overflowX: 'auto',
-//         transition: 'background-color 0.5s, box-shadow 0.5s', // smooth transition
-//         '&:hover': {
-//           bgcolor: 'rgba(15, 30, 55, 0.9)', // slightly lighter bluish black
-//           boxShadow: '0 4px 20px rgba(0, 100, 255, 0.2)', // soft blue glow
-//         },
-//         animation: 'pulseBackground 5s ease-in-out infinite' // pulse animation
-//       }}
-//     >
-//       {/* Left: Title and Search */}
-//       <Box sx={{ display: 'flex', alignItems: 'center', mr: 3 }}>
-//         <Typography variant="h6" sx={{ fontWeight: 600, fontSize: 20, color: 'primary.main', mr: 2 }}>
-//           Contacts
+//     <Box sx={{
+//       background: navbarBackground,
+//       px: { xs: 1.5, sm: 2 },
+//       py: 1.5,
+//       display: 'flex',
+//       justifyContent: 'space-between',
+//       alignItems: 'center',
+//       width: '100%',
+//       boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',
+//       position: 'sticky',
+//       top: 0,
+//       zIndex: 1100,
+//     }}>
+//       {/* Left Section: Logo/Title */}
+//       <Box sx={{ 
+//         display: 'flex', 
+//         alignItems: 'center', 
+//         gap: 1.5 
+//       }}>
+//         {isMobile && (
+//           <IconButton 
+//             color="inherit" 
+//             edge="start" 
+//             onClick={handleMobileMenuOpen}
+//             sx={{ color: 'white', mr: 1 }}
+//           >
+//             <MenuIcon size={24} />
+//           </IconButton>
+//         )}
+        
+//         <Box sx={{
+//           background: `linear-gradient(135deg, ${theme.palette.secondary.light}, #66bb6a)`,
+//           borderRadius: '50%',
+//           padding: 0.8,
+//           display: 'flex',
+//           alignItems: 'center',
+//           justifyContent: 'center',
+//           width: 32,
+//           height: 32,
+//           boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+//           transition: 'transform 0.3s',
+//           '&:hover': {
+//             transform: 'scale(1.05)',
+//           }
+//         }}>
+//           <Typography sx={{ 
+//             color: 'white', 
+//             fontSize: '1.2rem', 
+//             lineHeight: 1,
+//             fontWeight: 'bold',
+//           }}>
+//             •••
+//           </Typography>
+//         </Box>
+        
+//         <Typography
+//           variant="h6"
+//           sx={{
+//             fontWeight: 'bold',
+//             color: 'white',
+//             fontSize: { xs: '1.2rem', sm: '1.5rem' },
+//             textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+//             fontFamily: "'Poppins', sans-serif",
+//             display: { xs: 'none', sm: 'block' }
+//           }}
+//         >
+//           familYchaT
 //         </Typography>
+//       </Box>
+
+//       {/* Middle Section: Navigation Icons (hidden on mobile) */}
+//       {!isMobile && (
+//         <Box sx={{ 
+//           display: 'flex', 
+//           gap: { xs: 1, sm: 1.5, md: 2 }, 
+//           alignItems: 'center',
+//           position: 'absolute',
+//           left: '50%',
+//           transform: 'translateX(-50%)'
+//         }}>
+//           <Tooltip title="Home">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('home'),
+//                 ...getActiveStyle('home'),
+//                 transition: 'all 0.2s'
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('home')}
+//             >
+//               <Home size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Chat">
+//             <IconButton
+//               sx={{
+//                 color: getIconColor('chat'),
+//                 ...getActiveStyle('chat'),
+//                 transition: 'all 0.2s'
+//               }}
+//               size="medium"
+//               onClick={() => handleNavItemClick('chat')}
+//             >
+//               <Users size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Settings">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('settings'),
+//                 ...getActiveStyle('settings'),
+//                 transition: 'all 0.2s'
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('settings')}
+//             >
+//               <Settings size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Help">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('help'),
+//                 ...getActiveStyle('help'),
+//                 transition: 'all 0.2s'
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('help')}
+//             >
+//               <HelpCircle size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Documents">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('documents'),
+//                 ...getActiveStyle('documents'),
+//                 transition: 'all 0.2s' 
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('documents')}
+//             >
+//               <FileText size={20} />
+//             </IconButton>
+//           </Tooltip>
+//         </Box>
+//       )}
+
+//       {/* Right Section: Action Icons */}
+//       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1.5 }, alignItems: 'center' }}>
+//         <Tooltip title="Search">
+//           <IconButton 
+//             sx={{ 
+//               color: 'white',
+//               backgroundColor: alpha('#ffffff', 0.1),
+//               '&:hover': {
+//                 backgroundColor: alpha('#ffffff', 0.2),
+//               }
+//             }} 
+//             size="small"
+//           >
+//             <Search size={18} />
+//           </IconButton>
+//         </Tooltip>
+        
+//         <Tooltip title="Notifications">
+//           <IconButton 
+//             sx={{ 
+//               color: 'white',
+//               backgroundColor: alpha('#ffffff', 0.1),
+//               '&:hover': {
+//                 backgroundColor: alpha('#ffffff', 0.2),
+//               } 
+//             }} 
+//             size="small"
+//             onClick={handleNotificationsOpen}
+//           >
+//             <Badge 
+//               badgeContent={3} 
+//               color="error" 
+//               sx={{ 
+//                 '& .MuiBadge-badge': {
+//                   backgroundColor: theme.palette.secondary.light,
+//                   border: `2px solid ${theme.palette.primary.dark}`,
+//                 }
+//               }}
+//             >
+//               <Bell size={18} />
+//             </Badge>
+//           </IconButton>
+//         </Tooltip>
+        
+//         <Tooltip title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+//           <IconButton 
+//             onClick={colorMode.toggleColorMode}
+//             sx={{ 
+//               color: 'white',
+//               backgroundColor: alpha('#ffffff', 0.1),
+//               '&:hover': {
+//                 backgroundColor: alpha('#ffffff', 0.2),
+//               }
+//             }} 
+//             size="small"
+//           >
+//             {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+//           </IconButton>
+//         </Tooltip>
+        
 //         <Box 
+//           onClick={handleProfileMenuOpen}
 //           sx={{
 //             display: 'flex',
 //             alignItems: 'center',
-//             bgcolor: 'grey.100',
-//             borderRadius: 2,
-//             px: 1,
-//             py: 0.5,
-//             width: 180,
+//             cursor: 'pointer',
+//             backgroundColor: alpha('#ffffff', 0.1),
+//             borderRadius: 20,
+//             padding: '4px 8px 4px 4px',
+//             ml: 0.5,
+//             '&:hover': {
+//               backgroundColor: alpha('#ffffff', 0.2),
+//             }
 //           }}
 //         >
-//           <Search size={18} style={{ marginRight: 8, color: '#9e9e9e' }} />
-//           <InputBase
-//             placeholder="Search..."
-//             value={searchQuery}
-//             onChange={(e) => setSearchQuery(e.target.value)}
-//             sx={{ fontSize: 14, width: '100%' }}
-//           />
+//           <Box 
+//             sx={{
+//               width: 28,
+//               height: 28,
+//               borderRadius: '50%',
+//               backgroundColor: theme.palette.secondary.light,
+//               display: 'flex',
+//               alignItems: 'center',
+//               justifyContent: 'center',
+//               mr: { xs: 0, sm: 1 }
+//             }}
+//           >
+//             <Typography sx={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>
+//               JD
+//             </Typography>
+//           </Box>
+          
+//           {!isMobile && (
+//             <>
+//               <Typography sx={{ color: 'white', fontSize: '0.9rem', fontWeight: 500 }}>
+//                 John Doe
+//               </Typography>
+//               <ChevronDown size={16} color="white" style={{ marginLeft: 4 }} />
+//             </>
+//           )}
 //         </Box>
 //       </Box>
 
-//       {/* Center: Users */}
-//       <List sx={{ display: 'flex', flexDirection: 'row', p: 0, m: 0, flexGrow: 1 }}>
-//         {filteredAndSortedUsers.map((user) => (
-//           <ListItem 
-//             key={user.id}
-//             button
-//             sx={{
-//               width: 'auto',
-//               minWidth: 80,
-//               mx: 1,
-//               py: 0,
-//               display: 'flex',
-//               flexDirection: 'column',
-//               alignItems: 'center',
-//               transition: 'all 0.3s',
-//               borderRadius: 2,
-//               '&:hover': { bgcolor: 'grey.100' },
+//       {/* Notifications Menu */}
+//       <Menu
+//         anchorEl={notificationsAnchor}
+//         open={Boolean(notificationsAnchor)}
+//         onClose={handleNotificationsClose}
+//         sx={{ mt: 1.5 }}
+//         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+//         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+//         PaperProps={{
+//           sx: {
+//             width: 320,
+//             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+//             backgroundColor: isDarkMode ? '#2d2d2d' : 'white',
+//             maxHeight: 400,
+//             overflow: 'auto',
+//           }
+//         }}
+//       >
+//         <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+//           <Typography sx={{ fontWeight: 'bold', fontSize: '1rem', color: isDarkMode ? 'white' : 'inherit' }}>
+//             Notifications
+//           </Typography>
+//         </Box>
+        
+//         <MenuItem 
+//           sx={{ 
+//             backgroundColor: alpha(theme.palette.primary.main, 0.1),
+//             '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.15) },
+//             py: 1.5
+//           }} 
+//           onClick={handleNotificationsClose}
+//         >
+//           <Box sx={{ width: '100%' }}>
+//             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+//               <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//                 New Message
+//               </Typography>
+//               <Typography variant="caption" color="text.secondary">
+//                 2 min ago
+//               </Typography>
+//             </Box>
+//             <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+//               Sarah sent you a message: "Hey, are you available for..."
+//             </Typography>
+//           </Box>
+//         </MenuItem>
+        
+//         <MenuItem sx={{ py: 1.5 }} onClick={handleNotificationsClose}>
+//           <Box sx={{ width: '100%' }}>
+//             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+//               <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//                 File Shared
+//               </Typography>
+//               <Typography variant="caption" color="text.secondary">
+//                 1 hour ago
+//               </Typography>
+//             </Box>
+//             <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+//               Mike shared a document with you: "Project Report.pdf"
+//             </Typography>
+//           </Box>
+//         </MenuItem>
+        
+//         <MenuItem sx={{ py: 1.5 }} onClick={handleNotificationsClose}>
+//           <Box sx={{ width: '100%' }}>
+//             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+//               <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//                 Room Invitation
+//               </Typography>
+//               <Typography variant="caption" color="text.secondary">
+//                 Yesterday
+//               </Typography>
+//             </Box>
+//             <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+//               You've been invited to join "Design Team" room
+//             </Typography>
+//           </Box>
+//         </MenuItem>
+        
+//         <Box sx={{ p: 1.5, textAlign: 'center', borderTop: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+//           <Typography 
+//             sx={{ 
+//               fontSize: '0.875rem', 
+//               color: theme.palette.primary.main, 
+//               cursor: 'pointer',
+//               '&:hover': { textDecoration: 'underline' }
 //             }}
 //           >
-//             <ListItemAvatar sx={{ position: 'relative', mb: 0.5 }}>
-//               <Avatar 
-//                 src={user.avatar} 
-//                 alt={user.name}
-//                 sx={{ width: 40, height: 40, boxShadow: 2 }}
-//               />
-//               {/* Status indicator */}
-//               <Box 
-//                 sx={{
-//                   position: 'absolute',
-//                   bottom: 0,
-//                   right: 0,
-//                   width: 10,
-//                   height: 10,
-//                   borderRadius: '50%',
-//                   bgcolor: user.status === 'online' ? 'green' : 'red',
-//                   border: '2px solid white',
-//                   animation: user.status === 'online' ? 'pulse 1.5s infinite' : 'none'
-//                 }}
-//               />
-//             </ListItemAvatar>
-//             <ListItemText 
-//               primary={user.name.split(' ')[0]}
-//               primaryTypographyProps={{
-//                 fontSize: 12,
-//                 fontWeight: 500,
-//                 textAlign: 'center',
-//                 color: 'text.primary'
-//               }}
-//             />
-//           </ListItem>
-//         ))}
-//       </List>
+//             See all notifications
+//           </Typography>
+//         </Box>
+//       </Menu>
 
-//       {/* Right: More Options */}
-//       <IconButton size="small" sx={{ color: 'text.secondary', ml: 2 }}>
-//         <MoreVertical size={20} />
-//       </IconButton>
-
-//       {/* Custom Pulse Animation */}
-//       <style>
-//         {`
-//           @keyframes pulse {
-//             0% {
-//               transform: scale(1);
-//               opacity: 1;
-//             }
-//             50% {
-//               transform: scale(1.4);
-//               opacity: 0.6;
-//             }
-//             100% {
-//               transform: scale(1);
-//               opacity: 1;
-//             }
+//       {/* Profile Menu */}
+//       <Menu
+//         anchorEl={anchorEl}
+//         open={Boolean(anchorEl)}
+//         onClose={handleProfileMenuClose}
+//         sx={{ mt: 1.5 }}
+//         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+//         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+//         PaperProps={{
+//           sx: {
+//             minWidth: 200,
+//             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+//             backgroundColor: isDarkMode ? '#2d2d2d' : 'white'
 //           }
+//         }}
+//       >
+//         <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+//           <Box 
+//             sx={{
+//               width: 40,
+//               height: 40,
+//               borderRadius: '50%',
+//               backgroundColor: theme.palette.primary.main,
+//               display: 'flex',
+//               alignItems: 'center',
+//               justifyContent: 'center'
+//             }}
+//           >
+//             <Typography sx={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>
+//               JD
+//             </Typography>
+//           </Box>
+//           <Box>
+//             <Typography fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//               John Doe
+//             </Typography>
+//             <Typography variant="body2" color="text.secondary">
+//               john.doe@example.com
+//             </Typography>
+//           </Box>
+//         </Box>
 
-//           @keyframes pulseBackground {
-//             0% {
-//               transform: scale(1);
-//               opacity: 1;
-//             }
-//             50% {
-//               transform: scale(1.05);
-//               opacity: 0.8;
-//             }
-//             100% {
-//               transform: scale(1);
-//               opacity: 1;
-//             }
+//         <Divider />
+
+//         <MenuItem onClick={handleProfileMenuClose} sx={{ gap: 1.5, py: 1 }}>
+//           <User size={16} />
+//           <Typography>Profile</Typography>
+//         </MenuItem>
+        
+//         <MenuItem onClick={handleProfileMenuClose} sx={{ gap: 1.5, py: 1 }}>
+//           <Settings size={16} />
+//           <Typography>Account Settings</Typography>
+//         </MenuItem>
+        
+//         <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+//           <Typography>Dark Mode</Typography>
+//           <Switch 
+//             checked={isDarkMode}
+//             onChange={colorMode.toggleColorMode}
+//             color="secondary"
+//           />
+//         </Box>
+
+//         <Divider />
+
+//         <MenuItem 
+//           onClick={handleProfileMenuClose} 
+//           sx={{ 
+//             color: theme.palette.error.main, 
+//             gap: 1.5, 
+//             py: 1
+//           }}
+//         >
+//           <LogOut size={16} />
+//           <Typography>Logout</Typography>
+//         </MenuItem>
+//       </Menu>
+
+//       {/* Mobile Menu */}
+//       <Menu
+//         anchorEl={mobileMenuAnchor}
+//         open={Boolean(mobileMenuAnchor)}
+//         onClose={handleMobileMenuClose}
+//         sx={{ mt: 1.5 }}
+//         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+//         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+//         PaperProps={{
+//           sx: {
+//             width: 200,
+//             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+//             backgroundColor: isDarkMode ? '#2d2d2d' : 'white'
 //           }
-//         `}
-//       </style>
-//     </Paper>
+//         }}
+//       >
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('home')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'home' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'home' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <Home size={18} />
+//           <Typography>Home</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('chat')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'chat' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'chat' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <Users size={18} />
+//           <Typography>Chat</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('settings')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'settings' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'settings' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <Settings size={18} />
+//           <Typography>Settings</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('help')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'help' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'help' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <HelpCircle size={18} />
+//           <Typography>Help</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('documents')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'documents' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'documents' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <FileText size={18} />
+//           <Typography>Documents</Typography>
+//         </MenuItem>
+//       </Menu>
+//     </Box>
 //   );
 // }
 
+// // Example of using the navbar with the ColorModeContext
+// export function AppWithColorMode() {
+//   const [mode, setMode] = React.useState('light');
+  
+//   const colorMode = React.useMemo(
+//     () => ({
+//       toggleColorMode: () => {
+//         setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+//       },
+//       mode,
+//     }),
+//     [mode],
+//   );
 
-import React from 'react';
-import { 
-  Box, 
-  Typography, 
-  IconButton, 
-  Badge 
-} from '@mui/material'; 
-import { 
-  Home, 
-  Users, 
-  Settings, 
-  HelpCircle, 
-  FileText, 
-  Search, 
-  Bell 
+//   const theme = React.useMemo(
+//     () =>
+//       createTheme({
+//         palette: {
+//           mode,
+//           primary: {
+//             main: '#9c27b0',
+//             light: '#d05ce3',
+//             dark: '#6a0080',
+//           },
+//           secondary: {
+//             main: '#7b1fa2',
+//             light: '#ae52d4',
+//             dark: '#4a0072',
+//           },
+//         },
+//       }),
+//     [mode],
+//   );
+
+//   return (
+//     <ColorModeContext.Provider value={colorMode}>
+//       <ThemeProvider theme={theme}>
+//         <Box sx={{ bgcolor: mode === 'dark' ? '#121212' : '#f5f5f5', minHeight: '100vh' }}>
+//           <ChatNavbar activeTab="chat" onTabChange={(tab) => console.log(`Changed to ${tab}`)} />
+//           {/* Rest of the app */}
+//         </Box>
+//       </ThemeProvider>
+//     </ColorModeContext.Provider>
+//   );
+// }
+
+// import React, { useState, useContext } from 'react';
+// import {
+//   Box,
+//   Typography,
+//   IconButton,
+//   Badge,
+//   Menu,
+//   MenuItem,
+//   Tooltip,
+//   Switch,
+//   Divider,
+//   useMediaQuery,
+//   useTheme,
+//   ThemeProvider,
+//   createTheme,
+//   alpha
+// } from '@mui/material';
+
+// import {
+//   Home,
+//   Users,
+//   Settings,
+//   HelpCircle,
+//   FileText,
+//   Search,
+//   Bell,
+//   Moon,
+//   Sun,
+//   ChevronDown,
+//   User,
+//   LogOut,
+//   Menu as MenuIcon
+// } from 'lucide-react';
+
+// // Create a Theme Context for color mode
+// export const ColorModeContext = React.createContext({
+//   toggleColorMode: () => {},
+//   mode: 'light'
+// });
+
+// function ChatNavbar({ activeTab = 'chat', onTabChange }) {
+//   const theme = useTheme();
+//   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+//   const [anchorEl, setAnchorEl] = useState(null);
+//   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+//   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  
+//   // Access the color mode context
+//   const colorMode = useContext(ColorModeContext);
+//   const isDarkMode = theme.palette.mode === 'dark'; // Use theme.palette.mode instead of colorMode.mode
+
+//   // Handle profile menu
+//   const handleProfileMenuOpen = (event) => {
+//     setAnchorEl(event.currentTarget);
+//   };
+
+//   const handleProfileMenuClose = () => {
+//     setAnchorEl(null);
+//   };
+
+//   // Handle mobile menu
+//   const handleMobileMenuOpen = (event) => {
+//     setMobileMenuAnchor(event.currentTarget);
+//   };
+
+//   const handleMobileMenuClose = () => {
+//     setMobileMenuAnchor(null);
+//   };
+
+//   // Handle notifications
+//   const handleNotificationsOpen = (event) => {
+//     setNotificationsAnchor(event.currentTarget);
+//   };
+
+//   const handleNotificationsClose = () => {
+//     setNotificationsAnchor(null);
+//   };
+
+//   // Handle tab change
+//   const handleNavItemClick = (tab) => {
+//     if (onTabChange) {
+//       onTabChange(tab);
+//     }
+//     handleMobileMenuClose();
+//   };
+
+//   // Create gradient based on color mode
+//   const navbarBackground = isDarkMode
+//     ? 'linear-gradient(to right, #4a148c, #6a1b9a)'
+//     : 'linear-gradient(to right, #8e24aa, #6a1b9a)';
+
+//   // Get icon color based on active state
+//   const getIconColor = (tabName) => {
+//     if (activeTab === tabName) {
+//       return theme.palette.secondary.light;
+//     }
+//     return 'white';
+//   };
+
+//   // Get active indicator style
+//   const getActiveStyle = (tabName) => {
+//     if (activeTab === tabName) {
+//       return {
+//         borderBottom: `3px solid ${theme.palette.secondary.light}`,
+//         borderRadius: 0,
+//         paddingBottom: '4px'
+//       };
+//     }
+//     return {};
+//   };
+
+//   return (
+//     <Box sx={{
+//       background: navbarBackground,
+//       px: { xs: 1.5, sm: 2 },
+//       py: 1.5,
+//       display: 'flex',
+//       justifyContent: 'space-between',
+//       alignItems: 'center',
+//       width: '100%',
+//       boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',
+//       position: 'sticky',
+//       top: 0,
+//       zIndex: 1100,
+//     }}>
+//       {/* Left Section: Logo/Title */}
+//       <Box sx={{ 
+//         display: 'flex', 
+//         alignItems: 'center', 
+//         gap: 1.5 
+//       }}>
+//         {isMobile && (
+//           <IconButton 
+//             color="inherit" 
+//             edge="start" 
+//             onClick={handleMobileMenuOpen}
+//             sx={{ color: 'white', mr: 1 }}
+//           >
+//             <MenuIcon size={24} />
+//           </IconButton>
+//         )}
+        
+//         <Box sx={{
+//           background: `linear-gradient(135deg, ${theme.palette.secondary.light}, #66bb6a)`,
+//           borderRadius: '50%',
+//           padding: 0.8,
+//           display: 'flex',
+//           alignItems: 'center',
+//           justifyContent: 'center',
+//           width: 32,
+//           height: 32,
+//           boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+//           transition: 'transform 0.3s',
+//           '&:hover': {
+//             transform: 'scale(1.05)',
+//           }
+//         }}>
+//           <Typography sx={{ 
+//             color: 'white', 
+//             fontSize: '1.2rem', 
+//             lineHeight: 1,
+//             fontWeight: 'bold',
+//           }}>
+//             •••
+//           </Typography>
+//         </Box>
+        
+//         <Typography
+//           variant="h6"
+//           sx={{
+//             fontWeight: 'bold',
+//             color: 'white',
+//             fontSize: { xs: '1.2rem', sm: '1.5rem' },
+//             textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+//             fontFamily: "'Poppins', sans-serif",
+//             display: { xs: 'none', sm: 'block' }
+//           }}
+//         >
+//           familYchaT
+//         </Typography>
+//       </Box>
+
+//       {/* Middle Section: Navigation Icons (hidden on mobile) */}
+//       {!isMobile && (
+//         <Box sx={{ 
+//           display: 'flex', 
+//           gap: { xs: 1, sm: 1.5, md: 2 }, 
+//           alignItems: 'center',
+//           position: 'absolute',
+//           left: '50%',
+//           transform: 'translateX(-50%)'
+//         }}>
+//           <Tooltip title="Home">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('home'),
+//                 ...getActiveStyle('home'),
+//                 transition: 'all 0.2s'
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('home')}
+//             >
+//               <Home size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Chat">
+//             <IconButton
+//               sx={{
+//                 color: getIconColor('chat'),
+//                 ...getActiveStyle('chat'),
+//                 transition: 'all 0.2s'
+//               }}
+//               size="medium"
+//               onClick={() => handleNavItemClick('chat')}
+//             >
+//               <Users size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Settings">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('settings'),
+//                 ...getActiveStyle('settings'),
+//                 transition: 'all 0.2s'
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('settings')}
+//             >
+//               <Settings size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Help">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('help'),
+//                 ...getActiveStyle('help'),
+//                 transition: 'all 0.2s'
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('help')}
+//             >
+//               <HelpCircle size={20} />
+//             </IconButton>
+//           </Tooltip>
+          
+//           <Tooltip title="Documents">
+//             <IconButton 
+//               sx={{ 
+//                 color: getIconColor('documents'),
+//                 ...getActiveStyle('documents'),
+//                 transition: 'all 0.2s' 
+//               }} 
+//               size="medium"
+//               onClick={() => handleNavItemClick('documents')}
+//             >
+//               <FileText size={20} />
+//             </IconButton>
+//           </Tooltip>
+//         </Box>
+//       )}
+
+//       {/* Right Section: Action Icons */}
+//       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1.5 }, alignItems: 'center' }}>
+//         <Tooltip title="Search">
+//           <IconButton 
+//             sx={{ 
+//               color: 'white',
+//               backgroundColor: alpha('#ffffff', 0.1),
+//               '&:hover': {
+//                 backgroundColor: alpha('#ffffff', 0.2),
+//               }
+//             }} 
+//             size="small"
+//           >
+//             <Search size={18} />
+//           </IconButton>
+//         </Tooltip>
+        
+//         <Tooltip title="Notifications">
+//           <IconButton 
+//             sx={{ 
+//               color: 'white',
+//               backgroundColor: alpha('#ffffff', 0.1),
+//               '&:hover': {
+//                 backgroundColor: alpha('#ffffff', 0.2),
+//               } 
+//             }} 
+//             size="small"
+//             onClick={handleNotificationsOpen}
+//           >
+//             <Badge 
+//               badgeContent={3} 
+//               color="error" 
+//               sx={{ 
+//                 '& .MuiBadge-badge': {
+//                   backgroundColor: theme.palette.secondary.light,
+//                   border: `2px solid ${theme.palette.primary.dark}`,
+//                 }
+//               }}
+//             >
+//               <Bell size={18} />
+//             </Badge>
+//           </IconButton>
+//         </Tooltip>
+        
+//         <Tooltip title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+//           <IconButton 
+//             onClick={colorMode.toggleColorMode}
+//             sx={{ 
+//               color: 'white',
+//               backgroundColor: alpha('#ffffff', 0.1),
+//               '&:hover': {
+//                 backgroundColor: alpha('#ffffff', 0.2),
+//               }
+//             }} 
+//             size="small"
+//           >
+//             {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+//           </IconButton>
+//         </Tooltip>
+        
+//         <Box 
+//           onClick={handleProfileMenuOpen}
+//           sx={{
+//             display: 'flex',
+//             alignItems: 'center',
+//             cursor: 'pointer',
+//             backgroundColor: alpha('#ffffff', 0.1),
+//             borderRadius: 20,
+//             padding: '4px 8px 4px 4px',
+//             ml: 0.5,
+//             '&:hover': {
+//               backgroundColor: alpha('#ffffff', 0.2),
+//             }
+//           }}
+//         >
+//           <Box 
+//             sx={{
+//               width: 28,
+//               height: 28,
+//               borderRadius: '50%',
+//               backgroundColor: theme.palette.secondary.light,
+//               display: 'flex',
+//               alignItems: 'center',
+//               justifyContent: 'center',
+//               mr: { xs: 0, sm: 1 }
+//             }}
+//           >
+//             <Typography sx={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>
+//               JD
+//             </Typography>
+//           </Box>
+          
+//           {!isMobile && (
+//             <>
+//               <Typography sx={{ color: 'white', fontSize: '0.9rem', fontWeight: 500 }}>
+//                 John Doe
+//               </Typography>
+//               <ChevronDown size={16} color="white" style={{ marginLeft: 4 }} />
+//             </>
+//           )}
+//         </Box>
+//       </Box>
+
+//       {/* Notifications Menu */}
+//       <Menu
+//         anchorEl={notificationsAnchor}
+//         open={Boolean(notificationsAnchor)}
+//         onClose={handleNotificationsClose}
+//         sx={{ mt: 1.5 }}
+//         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+//         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+//         PaperProps={{
+//           sx: {
+//             width: 320,
+//             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+//             backgroundColor: isDarkMode ? '#2d2d2d' : 'white',
+//             maxHeight: 400,
+//             overflow: 'auto',
+//           }
+//         }}
+//       >
+//         <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+//           <Typography sx={{ fontWeight: 'bold', fontSize: '1rem', color: isDarkMode ? 'white' : 'inherit' }}>
+//             Notifications
+//           </Typography>
+//         </Box>
+        
+//         <MenuItem 
+//           sx={{ 
+//             backgroundColor: alpha(theme.palette.primary.main, 0.1),
+//             '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.15) },
+//             py: 1.5
+//           }} 
+//           onClick={handleNotificationsClose}
+//         >
+//           <Box sx={{ width: '100%' }}>
+//             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+//               <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//                 New Message
+//               </Typography>
+//               <Typography variant="caption" color="text.secondary">
+//                 2 min ago
+//               </Typography>
+//             </Box>
+//             <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+//               Sarah sent you a message: "Hey, are you available for..."
+//             </Typography>
+//           </Box>
+//         </MenuItem>
+        
+//         <MenuItem sx={{ py: 1.5 }} onClick={handleNotificationsClose}>
+//           <Box sx={{ width: '100%' }}>
+//             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+//               <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//                 File Shared
+//               </Typography>
+//               <Typography variant="caption" color="text.secondary">
+//                 1 hour ago
+//               </Typography>
+//             </Box>
+//             <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+//               Mike shared a document with you: "Project Report.pdf"
+//             </Typography>
+//           </Box>
+//         </MenuItem>
+        
+//         <MenuItem sx={{ py: 1.5 }} onClick={handleNotificationsClose}>
+//           <Box sx={{ width: '100%' }}>
+//             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+//               <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//                 Room Invitation
+//               </Typography>
+//               <Typography variant="caption" color="text.secondary">
+//                 Yesterday
+//               </Typography>
+//             </Box>
+//             <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+//               You've been invited to join "Design Team" room
+//             </Typography>
+//           </Box>
+//         </MenuItem>
+        
+//         <Box sx={{ p: 1.5, textAlign: 'center', borderTop: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+//           <Typography 
+//             sx={{ 
+//               fontSize: '0.875rem', 
+//               color: theme.palette.primary.main, 
+//               cursor: 'pointer',
+//               '&:hover': { textDecoration: 'underline' }
+//             }}
+//           >
+//             See all notifications
+//           </Typography>
+//         </Box>
+//       </Menu>
+
+//       {/* Profile Menu */}
+//       <Menu
+//         anchorEl={anchorEl}
+//         open={Boolean(anchorEl)}
+//         onClose={handleProfileMenuClose}
+//         sx={{ mt: 1.5 }}
+//         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+//         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+//         PaperProps={{
+//           sx: {
+//             minWidth: 200,
+//             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+//             backgroundColor: isDarkMode ? '#2d2d2d' : 'white'
+//           }
+//         }}
+//       >
+//         <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+//           <Box 
+//             sx={{
+//               width: 40,
+//               height: 40,
+//               borderRadius: '50%',
+//               backgroundColor: theme.palette.primary.main,
+//               display: 'flex',
+//               alignItems: 'center',
+//               justifyContent: 'center'
+//             }}
+//           >
+//             <Typography sx={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>
+//               JD
+//             </Typography>
+//           </Box>
+//           <Box>
+//             <Typography fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+//               John Doe
+//             </Typography>
+//             <Typography variant="body2" color="text.secondary">
+//               john.doe@example.com
+//             </Typography>
+//           </Box>
+//         </Box>
+
+//         <Divider />
+
+//         <MenuItem onClick={handleProfileMenuClose} sx={{ gap: 1.5, py: 1 }}>
+//           <User size={16} />
+//           <Typography>Profile</Typography>
+//         </MenuItem>
+        
+//         <MenuItem onClick={handleProfileMenuClose} sx={{ gap: 1.5, py: 1 }}>
+//           <Settings size={16} />
+//           <Typography>Account Settings</Typography>
+//         </MenuItem>
+        
+//         <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+//           <Typography>Dark Mode</Typography>
+//           <Switch 
+//             checked={isDarkMode}
+//             onChange={colorMode.toggleColorMode}
+//             color="secondary"
+//           />
+//         </Box>
+
+//         <Divider />
+
+//         <MenuItem 
+//           onClick={handleProfileMenuClose} 
+//           sx={{ 
+//             color: theme.palette.error.main, 
+//             gap: 1.5, 
+//             py: 1
+//           }}
+//         >
+//           <LogOut size={16} />
+//           <Typography>Logout</Typography>
+//         </MenuItem>
+//       </Menu>
+
+//       {/* Mobile Menu */}
+//       <Menu
+//         anchorEl={mobileMenuAnchor}
+//         open={Boolean(mobileMenuAnchor)}
+//         onClose={handleMobileMenuClose}
+//         sx={{ mt: 1.5 }}
+//         transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+//         anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+//         PaperProps={{
+//           sx: {
+//             width: 200,
+//             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+//             backgroundColor: isDarkMode ? '#2d2d2d' : 'white'
+//           }
+//         }}
+//       >
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('home')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'home' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'home' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <Home size={18} />
+//           <Typography>Home</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('chat')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'chat' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'chat' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <Users size={18} />
+//           <Typography>Chat</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('settings')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'settings' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'settings' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <Settings size={18} />
+//           <Typography>Settings</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('help')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'help' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'help' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <HelpCircle size={18} />
+//           <Typography>Help</Typography>
+//         </MenuItem>
+        
+//         <MenuItem 
+//           onClick={() => handleNavItemClick('documents')}
+//           sx={{ 
+//             backgroundColor: activeTab === 'documents' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+//             color: activeTab === 'documents' ? theme.palette.primary.main : 'inherit',
+//             gap: 1.5,
+//             py: 1
+//           }}
+//         >
+//           <FileText size={18} />
+//           <Typography>Documents</Typography>
+//         </MenuItem>
+//       </Menu>
+//     </Box>
+//   );
+// }
+
+// // Example of using the navbar with the ColorModeContext
+// export function AppWithColorMode() {
+//   const [mode, setMode] = React.useState('light');
+  
+//   const colorMode = React.useMemo(
+//     () => ({
+//       toggleColorMode: () => {
+//         setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+//       },
+//       mode,
+//     }),
+//     [mode],
+//   );
+
+//   const theme = React.useMemo(
+//     () =>
+//       createTheme({
+//         palette: {
+//           mode,
+//           primary: {
+//             main: '#9c27b0',
+//             light: '#d05ce3',
+//             dark: '#6a0080',
+//           },
+//           secondary: {
+//             main: '#7b1fa2',
+//             light: '#ae52d4',
+//             dark: '#4a0072',
+//           },
+//         },
+//       }),
+//     [mode],
+//   );
+
+//   return (
+//     <ColorModeContext.Provider value={colorMode}>
+//       <ThemeProvider theme={theme}>
+//         <Box sx={{ bgcolor: mode === 'dark' ? '#121212' : '#f5f5f5', minHeight: '100vh' }}>
+//           <ChatNavbar activeTab="chat" onTabChange={(tab) => console.log(`Changed to ${tab}`)} />
+//           {/* Rest of the app */}
+//         </Box>
+//       </ThemeProvider>
+//     </ColorModeContext.Provider>
+//   );
+// }
+
+// // If you want to use ChatNavbar anywhere else in your app, wrap it with the necessary context providers
+// export default function StandaloneChatNavbar(props) {
+//   return (
+//     <AppWithColorMode>
+//       <ChatNavbar {...props} />
+//     </AppWithColorMode>
+//   );
+// }
+
+import React, { useState, useContext } from 'react';
+import {
+  Box,
+  Typography,
+  IconButton,
+  Badge,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Switch,
+  Divider,
+  useMediaQuery,
+  useTheme,
+  alpha
+} from '@mui/material';
+
+import {
+  Home,
+  Users,
+  Settings,
+  HelpCircle,
+  FileText,
+  Search,
+  Bell,
+  Moon,
+  Sun,
+  ChevronDown,
+  User,
+  LogOut,
+  Menu as MenuIcon
 } from 'lucide-react';
 
-export default function ChatNavbar() {
+// Import the ColorModeContext from the App component
+import { ColorModeContext } from '../App'; // Adjust the path as needed
+
+function Navbar({ activeTab = 'chat', onTabChange }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+  const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  
+  // Access the color mode context
+  const colorMode = useContext(ColorModeContext);
+  const isDarkMode = theme.palette.mode === 'dark';
+
+  // Handle profile menu
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Handle mobile menu
+  const handleMobileMenuOpen = (event) => {
+    setMobileMenuAnchor(event.currentTarget);
+  };
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuAnchor(null);
+  };
+
+  // Handle notifications
+  const handleNotificationsOpen = (event) => {
+    setNotificationsAnchor(event.currentTarget);
+  };
+
+  const handleNotificationsClose = () => {
+    setNotificationsAnchor(null);
+  };
+
+  // Handle tab change
+  const handleNavItemClick = (tab) => {
+    if (onTabChange) {
+      onTabChange(tab);
+    }
+    handleMobileMenuClose();
+  };
+
+  // Create gradient based on color mode
+  const navbarBackground = isDarkMode
+    ? 'linear-gradient(to right, #4a148c, #6a1b9a)'
+    : 'linear-gradient(to right, #8e24aa, #6a1b9a)';
+
+  // Get icon color based on active state
+  const getIconColor = (tabName) => {
+    if (activeTab === tabName) {
+      return theme.palette.secondary.light;
+    }
+    return 'white';
+  };
+
+  // Get active indicator style
+  const getActiveStyle = (tabName) => {
+    if (activeTab === tabName) {
+      return {
+        borderBottom: `3px solid ${theme.palette.secondary.light}`,
+        borderRadius: 0,
+        paddingBottom: '4px'
+      };
+    }
+    return {};
+  };
+
   return (
-    <Box sx={{ 
-      backgroundColor: '#6a1b9a', 
-      px: 2, // Horizontal padding (left & right)
-      py: 2, // Vertical padding (top & bottom)
-      display: 'flex', 
-      justifyContent: 'space-between', 
+    <Box sx={{
+      background: navbarBackground,
+      px: { xs: 1.5, sm: 2 },
+      py: 1.5,
+      display: 'flex',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      width: '100%'
+      width: '100%',
+      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1100,
     }}>
       {/* Left Section: Logo/Title */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ 
-          backgroundColor: '#66bb6a', 
-          borderRadius: '50%', 
-          padding: 1,
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 1.5 
+      }}>
+        {isMobile && (
+          <IconButton 
+            color="inherit" 
+            edge="start" 
+            onClick={handleMobileMenuOpen}
+            sx={{ color: 'white', mr: 1 }}
+          >
+            <MenuIcon size={24} />
+          </IconButton>
+        )}
+        
+        <Box sx={{
+          background: `linear-gradient(135deg, ${theme.palette.secondary.light}, #66bb6a)`,
+          borderRadius: '50%',
+          padding: 0.8,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 28,
-          height: 28
+          width: 32,
+          height: 32,
+          boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+          transition: 'transform 0.3s',
+          '&:hover': {
+            transform: 'scale(1.05)',
+          }
         }}>
-          <Typography sx={{ color: 'white', fontSize: '1.5rem', lineHeight: 1 }}>
+          <Typography sx={{ 
+            color: 'white', 
+            fontSize: '1.2rem', 
+            lineHeight: 1,
+            fontWeight: 'bold',
+          }}>
             •••
           </Typography>
         </Box>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontWeight: 'bold', 
+        
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 'bold',
             color: 'white',
-            fontSize: '1.5rem'
+            fontSize: { xs: '1.2rem', sm: '1.5rem' },
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+            fontFamily: "'Poppins', sans-serif",
+            display: { xs: 'none', sm: 'block' }
           }}
         >
           familYchaT
         </Typography>
       </Box>
 
-      {/* Right Section: Navigation Icons */}
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-        <IconButton sx={{ color: 'white' }} size="medium">
-          <Home size={20} />
-        </IconButton>
-        <IconButton 
-          sx={{ 
-            color: 'white', 
-            borderBottom: '3px solid white', 
-            borderRadius: 0,
-            paddingBottom: '4px'
-          }} 
-          size="medium"
-        >
-          <Users size={20} />
-        </IconButton>
-        <IconButton sx={{ color: 'white' }} size="medium">
-          <Settings size={20} />
-        </IconButton>
-        <IconButton sx={{ color: 'white' }} size="medium">
-          <HelpCircle size={20} />
-        </IconButton>
-        <IconButton sx={{ color: 'white' }} size="medium">
-          <FileText size={20} />
-        </IconButton>
-        <IconButton sx={{ color: 'white' }} size="medium">
-          <Search size={20} />
-        </IconButton>
-        <Badge badgeContent={1} color="error">
-          <IconButton sx={{ color: 'white' }} size="medium">
-            <Bell size={20} />
+      {/* Middle Section: Navigation Icons (hidden on mobile) */}
+      {!isMobile && (
+        <Box sx={{ 
+          display: 'flex', 
+          gap: { xs: 1, sm: 1.5, md: 2 }, 
+          alignItems: 'center',
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)'
+        }}>
+          <Tooltip title="Home">
+            <IconButton 
+              sx={{ 
+                color: getIconColor('home'),
+                ...getActiveStyle('home'),
+                transition: 'all 0.2s'
+              }} 
+              size="medium"
+              onClick={() => handleNavItemClick('home')}
+            >
+              <Home size={20} />
+            </IconButton>
+          </Tooltip>
+          
+          <Tooltip title="Chat">
+            <IconButton
+              sx={{
+                color: getIconColor('chat'),
+                ...getActiveStyle('chat'),
+                transition: 'all 0.2s'
+              }}
+              size="medium"
+              onClick={() => handleNavItemClick('chat')}
+            >
+              <Users size={20} />
+            </IconButton>
+          </Tooltip>
+          
+          <Tooltip title="Settings">
+            <IconButton 
+              sx={{ 
+                color: getIconColor('settings'),
+                ...getActiveStyle('settings'),
+                transition: 'all 0.2s'
+              }} 
+              size="medium"
+              onClick={() => handleNavItemClick('settings')}
+            >
+              <Settings size={20} />
+            </IconButton>
+          </Tooltip>
+          
+          <Tooltip title="Help">
+            <IconButton 
+              sx={{ 
+                color: getIconColor('help'),
+                ...getActiveStyle('help'),
+                transition: 'all 0.2s'
+              }} 
+              size="medium"
+              onClick={() => handleNavItemClick('help')}
+            >
+              <HelpCircle size={20} />
+            </IconButton>
+          </Tooltip>
+          
+          <Tooltip title="Documents">
+            <IconButton 
+              sx={{ 
+                color: getIconColor('documents'),
+                ...getActiveStyle('documents'),
+                transition: 'all 0.2s' 
+              }} 
+              size="medium"
+              onClick={() => handleNavItemClick('documents')}
+            >
+              <FileText size={20} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
+
+      {/* Right Section: Action Icons */}
+      <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1.5 }, alignItems: 'center' }}>
+        <Tooltip title="Search">
+          <IconButton 
+            sx={{ 
+              color: 'white',
+              backgroundColor: alpha('#ffffff', 0.1),
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.2),
+              }
+            }} 
+            size="small"
+          >
+            <Search size={18} />
           </IconButton>
-        </Badge>
+        </Tooltip>
+        
+        <Tooltip title="Notifications">
+          <IconButton 
+            sx={{ 
+              color: 'white',
+              backgroundColor: alpha('#ffffff', 0.1),
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.2),
+              } 
+            }} 
+            size="small"
+            onClick={handleNotificationsOpen}
+          >
+            <Badge 
+              badgeContent={3} 
+              color="error" 
+              sx={{ 
+                '& .MuiBadge-badge': {
+                  backgroundColor: theme.palette.secondary.light,
+                  border: `2px solid ${theme.palette.primary.dark}`,
+                }
+              }}
+            >
+              <Bell size={18} />
+            </Badge>
+          </IconButton>
+        </Tooltip>
+        
+        <Tooltip title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+          <IconButton 
+            onClick={colorMode.toggleColorMode}
+            sx={{ 
+              color: 'white',
+              backgroundColor: alpha('#ffffff', 0.1),
+              '&:hover': {
+                backgroundColor: alpha('#ffffff', 0.2),
+              }
+            }} 
+            size="small"
+          >
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </IconButton>
+        </Tooltip>
+        
+        <Box 
+          onClick={handleProfileMenuOpen}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            cursor: 'pointer',
+            backgroundColor: alpha('#ffffff', 0.1),
+            borderRadius: 20,
+            padding: '4px 8px 4px 4px',
+            ml: 0.5,
+            '&:hover': {
+              backgroundColor: alpha('#ffffff', 0.2),
+            }
+          }}
+        >
+          <Box 
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              backgroundColor: theme.palette.secondary.light,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mr: { xs: 0, sm: 1 }
+            }}
+          >
+            <Typography sx={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>
+              JD
+            </Typography>
+          </Box>
+          
+          {!isMobile && (
+            <>
+              <Typography sx={{ color: 'white', fontSize: '0.9rem', fontWeight: 500 }}>
+                John Doe
+              </Typography>
+              <ChevronDown size={16} color="white" style={{ marginLeft: 4 }} />
+            </>
+          )}
+        </Box>
       </Box>
+
+      {/* Notifications Menu */}
+      <Menu
+        anchorEl={notificationsAnchor}
+        open={Boolean(notificationsAnchor)}
+        onClose={handleNotificationsClose}
+        sx={{ mt: 1.5 }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{
+          sx: {
+            width: 320,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+            backgroundColor: isDarkMode ? '#2d2d2d' : 'white',
+            maxHeight: 400,
+            overflow: 'auto',
+          }
+        }}
+      >
+        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+          <Typography sx={{ fontWeight: 'bold', fontSize: '1rem', color: isDarkMode ? 'white' : 'inherit' }}>
+            Notifications
+          </Typography>
+        </Box>
+        
+        <MenuItem 
+          sx={{ 
+            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.15) },
+            py: 1.5
+          }} 
+          onClick={handleNotificationsClose}
+        >
+          <Box sx={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+              <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+                New Message
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                2 min ago
+              </Typography>
+            </Box>
+            <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+              Sarah sent you a message: "Hey, are you available for..."
+            </Typography>
+          </Box>
+        </MenuItem>
+        
+        <MenuItem sx={{ py: 1.5 }} onClick={handleNotificationsClose}>
+          <Box sx={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+              <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+                File Shared
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                1 hour ago
+              </Typography>
+            </Box>
+            <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+              Mike shared a document with you: "Project Report.pdf"
+            </Typography>
+          </Box>
+        </MenuItem>
+        
+        <MenuItem sx={{ py: 1.5 }} onClick={handleNotificationsClose}>
+          <Box sx={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+              <Typography variant="subtitle2" fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+                Room Invitation
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Yesterday
+              </Typography>
+            </Box>
+            <Typography variant="body2" noWrap color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'}>
+              You've been invited to join "Design Team" room
+            </Typography>
+          </Box>
+        </MenuItem>
+        
+        <Box sx={{ p: 1.5, textAlign: 'center', borderTop: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+          <Typography 
+            sx={{ 
+              fontSize: '0.875rem', 
+              color: theme.palette.primary.main, 
+              cursor: 'pointer',
+              '&:hover': { textDecoration: 'underline' }
+            }}
+          >
+            See all notifications
+          </Typography>
+        </Box>
+      </Menu>
+
+      {/* Profile Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleProfileMenuClose}
+        sx={{ mt: 1.5 }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{
+          sx: {
+            minWidth: 200,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+            backgroundColor: isDarkMode ? '#2d2d2d' : 'white'
+          }
+        }}
+      >
+        <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box 
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              backgroundColor: theme.palette.primary.main,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Typography sx={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'white' }}>
+              JD
+            </Typography>
+          </Box>
+          <Box>
+            <Typography fontWeight="bold" color={isDarkMode ? 'white' : 'inherit'}>
+              John Doe
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              john.doe@example.com
+            </Typography>
+          </Box>
+        </Box>
+
+        <Divider />
+
+        <MenuItem onClick={handleProfileMenuClose} sx={{ gap: 1.5, py: 1 }}>
+          <User size={16} />
+          <Typography>Profile</Typography>
+        </MenuItem>
+        
+        <MenuItem onClick={handleProfileMenuClose} sx={{ gap: 1.5, py: 1 }}>
+          <Settings size={16} />
+          <Typography>Account Settings</Typography>
+        </MenuItem>
+        
+        <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography>Dark Mode</Typography>
+          <Switch 
+            checked={isDarkMode}
+            onChange={colorMode.toggleColorMode}
+            color="secondary"
+          />
+        </Box>
+
+        <Divider />
+
+        <MenuItem 
+          onClick={handleProfileMenuClose} 
+          sx={{ 
+            color: theme.palette.error.main, 
+            gap: 1.5, 
+            py: 1
+          }}
+        >
+          <LogOut size={16} />
+          <Typography>Logout</Typography>
+        </MenuItem>
+      </Menu>
+
+      {/* Mobile Menu */}
+      <Menu
+        anchorEl={mobileMenuAnchor}
+        open={Boolean(mobileMenuAnchor)}
+        onClose={handleMobileMenuClose}
+        sx={{ mt: 1.5 }}
+        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+        PaperProps={{
+          sx: {
+            width: 200,
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+            backgroundColor: isDarkMode ? '#2d2d2d' : 'white'
+          }
+        }}
+      >
+        <MenuItem 
+          onClick={() => handleNavItemClick('home')}
+          sx={{ 
+            backgroundColor: activeTab === 'home' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+            color: activeTab === 'home' ? theme.palette.primary.main : 'inherit',
+            gap: 1.5,
+            py: 1
+          }}
+        >
+          <Home size={18} />
+          <Typography>Home</Typography>
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => handleNavItemClick('chat')}
+          sx={{ 
+            backgroundColor: activeTab === 'chat' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+            color: activeTab === 'chat' ? theme.palette.primary.main : 'inherit',
+            gap: 1.5,
+            py: 1
+          }}
+        >
+          <Users size={18} />
+          <Typography>Chat</Typography>
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => handleNavItemClick('settings')}
+          sx={{ 
+            backgroundColor: activeTab === 'settings' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+            color: activeTab === 'settings' ? theme.palette.primary.main : 'inherit',
+            gap: 1.5,
+            py: 1
+          }}
+        >
+          <Settings size={18} />
+          <Typography>Settings</Typography>
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => handleNavItemClick('help')}
+          sx={{ 
+            backgroundColor: activeTab === 'help' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+            color: activeTab === 'help' ? theme.palette.primary.main : 'inherit',
+            gap: 1.5,
+            py: 1
+          }}
+        >
+          <HelpCircle size={18} />
+          <Typography>Help</Typography>
+        </MenuItem>
+        
+        <MenuItem 
+          onClick={() => handleNavItemClick('documents')}
+          sx={{ 
+            backgroundColor: activeTab === 'documents' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+            color: activeTab === 'documents' ? theme.palette.primary.main : 'inherit',
+            gap: 1.5,
+            py: 1
+          }}
+        >
+          <FileText size={18} />
+          <Typography>Documents</Typography>
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }
+
+export default Navbar;
