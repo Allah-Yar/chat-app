@@ -321,6 +321,7 @@ const ChatBox = () => {
       flexDirection: 'column',
       height: 'calc(100vh - 64px)', // Adjust based on your navbar height
       backgroundColor: theme.palette.background.default,
+      
       padding: 2,
     }}>
       <Paper
@@ -330,6 +331,7 @@ const ChatBox = () => {
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
+          
           borderRadius: 2,
           overflow: 'hidden',
         }}
@@ -393,6 +395,7 @@ const ChatBox = () => {
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
+          
           gap: 1,
         }}>
           {messages.map((msg, index) => (
@@ -429,7 +432,7 @@ const ChatBox = () => {
                   </Avatar>
                   
                   <Box sx={getMessageStyle(msg.userId)}>
-                    <Typography variant="body1">{msg.text}</Typography>
+                    <Typography variant="body1" sx={{color: '#fff'}}>{msg.text}</Typography>
                     
                     {msg.files && msg.files.length > 0 && (
                       <Box sx={{ mt: 1, display: "flex", flexDirection: "column", gap: 0.5 }}>
@@ -470,6 +473,7 @@ const ChatBox = () => {
                         mt: 0.5,
                         opacity: 0.7,
                         fontSize: "0.7rem",
+                        color: '#fff'
                       }}
                     >
                       {new Date(msg.timestamp).toLocaleTimeString([], { 
