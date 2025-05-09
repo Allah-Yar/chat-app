@@ -710,12 +710,14 @@ const ChatBox = () => {
         PaperProps={{
           sx: { 
             width: 320,
-            bgcolor: "background.default",
+            // bgcolor: "background.default",
+            backgroundColor: isDarkMode ? '#2d2d2d' : 'background.default',
+            color: isDarkMode ? 'inherit' : '#fff',
             p: 2,
           }
         }}
       >
-        <Typography variant="h6" color="primary" fontWeight="bold" mb={2}>
+        <Typography variant="h6" color="primary" fontWeight="bold" mb={2} sx={{ color: isDarkMode ? 'inherit' : 'primary' }}>
           Chat Settings
         </Typography>
         
@@ -765,6 +767,7 @@ const ChatBox = () => {
               label="Chat Room"
               sx={{
                 borderRadius: 3,
+                color: 'primary.main',
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: alpha(purpleTheme.palette.primary.main, 0.3),
                 },

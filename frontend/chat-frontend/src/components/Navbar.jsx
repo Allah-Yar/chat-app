@@ -1359,7 +1359,8 @@ import {
   Divider,
   useMediaQuery,
   useTheme,
-  alpha
+  alpha,
+  Button
 } from '@mui/material';
 
 import {
@@ -1377,6 +1378,8 @@ import {
   LogOut,
   Menu as MenuIcon
 } from 'lucide-react';
+import LogoutIcon from "@mui/icons-material/Logout";
+import LogoutDialog from "../components/LogoutDialog";
 
 // Import the ColorModeContext from the App component
 import { ColorModeContext } from '../App'; // Adjust the path as needed
@@ -1387,6 +1390,7 @@ function Navbar({ activeTab = 'chat', onTabChange }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+   const [showLogout, setShowLogout] = useState(false);
   
   // Access the color mode context
   const colorMode = useContext(ColorModeContext);
@@ -1417,6 +1421,12 @@ function Navbar({ activeTab = 'chat', onTabChange }) {
 
   const handleNotificationsClose = () => {
     setNotificationsAnchor(null);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    window.location.href = "/login"; // Redirect to login page
   };
 
   // Handle tab change
@@ -1874,8 +1884,19 @@ function Navbar({ activeTab = 'chat', onTabChange }) {
             py: 1
           }}
         >
-          <LogOut size={16} />
-          <Typography>Logout</Typography>
+          {/* <LogOut size={16} />
+          <Typography>Logout</Typography> */}
+               
+                    <Button 
+                      variant="outlined" 
+                      color="primary" 
+                      fullWidth 
+                      onClick={() => setShowLogout(true)}
+                      startIcon={<LogoutIcon />}
+                      sx={{ mt: 2 }}
+                    >
+                      Logout
+                    </Button>
         </MenuItem>
       </Menu>
 
@@ -1960,6 +1981,8 @@ function Navbar({ activeTab = 'chat', onTabChange }) {
           <Typography>Documents</Typography>
         </MenuItem>
       </Menu>
+         {/* Logout Dialog */}
+         <LogoutDialog open={showLogout} onClose={() => setShowLogout(false)} onConfirm={handleLogout} />
     </Box>
   );
 }
