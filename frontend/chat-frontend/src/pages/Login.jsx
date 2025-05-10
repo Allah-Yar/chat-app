@@ -69,6 +69,10 @@ export default function Login() {
       });
       saveToken(res.data.token);
 
+       sessionStorage.setItem("username", res.data.user.username);
+      sessionStorage.setItem("userId", res.data.user.id);
+      sessionStorage.setItem("email", res.data.user.email);
+
       setTimeout(() => {
         navigate("/chat");
       }, 500);
@@ -104,45 +108,6 @@ export default function Login() {
           margin: "0 auto" 
         }}
       >
-        {/* Left side - Branding/Image (hidden on mobile) */}
-        {/* {!isMobile && (
-          <Grid item xs={12} md={6}>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Paper 
-                elevation={0}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  height: '100%',
-                  backgroundColor: 'transparent',
-                  padding: 4,
-                  textAlign: 'center'
-                }}
-              >
-                <Box 
-                  
-                  sx={{ maxWidth: '80%', mx: 'auto', mb: 4 }}
-                />
-                <Typography 
-                  variant="h4" 
-                  color="primary.main" 
-                  fontWeight="700" 
-                  gutterBottom
-                >
-                  familYchaT
-                </Typography>
-                {/* <Typography variant="body1" color="text.secondary">
-                  Continue your journey with us. Access your personalized experience and all your saved preferences.
-                </Typography> */}
-              {/* </Paper>
-            </motion.div>
-          </Grid>
-        )} */} */
 
         {/* Right side - Login Form */}
         <Grid item xs={12} md={6}>
