@@ -55,16 +55,36 @@ io.on("connection", (socket) => {
   });
 
   // Typing indicator
+  // socket.on("typing", ({ userId, room, recipientId, chatMode }) => {
+  //   if (chatMode === "room") {
+  //     socket.to(room).emit("userTyping", { userId });
+  //   } else if (recipientId) {
+  //     const targetSocketId = userIdToSocketId[recipientId];
+  //     if (targetSocketId) {
+  //       io.to(targetSocketId).emit("userTyping", { userId });
+  //     }
+  //   }
+  // });
+
   socket.on("typing", ({ userId, room, recipientId, chatMode }) => {
-    if (chatMode === "room") {
-      socket.to(room).emit("userTyping", { userId });
-    } else if (recipientId) {
-      const targetSocketId = userIdToSocketId[recipientId];
-      if (targetSocketId) {
-        io.to(targetSocketId).emit("userTyping", { userId });
-      }
+  if (chatMode === "room") {
+    socket.to(room).emit("userTyping", {
+      userId,
+      room,
+      chatMode,
+    });
+  } else if (recipientId) {
+    const targetSocketId = userIdToSocketId[recipientId];
+    if (targetSocketId) {
+      io.to(targetSocketId).emit("userTyping", {
+        userId,
+        recipientId,
+        chatMode,
+      });
     }
-  });
+  }
+});
+
 
   // Disconnect
   socket.on("disconnect", () => {
